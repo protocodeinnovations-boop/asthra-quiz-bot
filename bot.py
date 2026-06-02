@@ -11,7 +11,12 @@ API_URL = "https://script.google.com/macros/s/AKfycbxBWEHGX_zzsg2oTmImd3z9K7aX9U
 async def main():
     bot = Bot(token=BOT_TOKEN)
 
-    response = requests.get(API_URL)
+    response = requests.get(API_URL, allow_redirects=True)
+
+    print("STATUS:", response.status_code)
+    print("URL:", response.url)
+    print("TEXT:", response.text[:1000])
+
     questions = response.json()
 
     q = questions[0]
@@ -26,7 +31,7 @@ async def main():
             q["d"]
         ],
         type="quiz",
-        correct_option_id=["A","B","C","D"].index(q["correct"])
+        correct_option_id=["A", "B", "C", "D"].index(q["correct"])
     )
 
     await bot.send_message(
