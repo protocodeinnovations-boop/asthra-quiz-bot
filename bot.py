@@ -27,7 +27,8 @@ async def main():
     questions = response.json()
 
     if not questions:
-        raise ValueError("No questions returned from API")
+        print("No questions pending.")
+        return
 
     q = questions[0]
 
@@ -45,6 +46,7 @@ async def main():
         explanation=q["explanation"]
     )
 
+    print("Question sent successfully.")
+
 if __name__ == "__main__":
-    asyncio.run(main())
     asyncio.run(main())
