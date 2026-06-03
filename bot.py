@@ -3,13 +3,13 @@ import asyncio
 import requests
 from telegram import Bot
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-CHAT_ID = os.getenv("CHAT_ID")
+BOT_TOKEN = os.getenv("8539465341:AAF3GakskKFGxT5hWQV1pIQgnx5-XF0IqH0")
+CHAT_ID = os.getenv("1001234567890")
 
 API_URL = "https://script.google.com/macros/s/AKfycbxBWEHGX_zzsg2oTmImd3z9K7aX9U9KvO72uiAEEgA9bvbk_RP6vdvu80JiREGNMIoD/exec"
 
 async def main():
-    bot = Bot(token=BOT_TOKEN)
+    bot = Bot(token=8539465341:AAF3GakskKFGxT5hWQV1pIQgnx5-XF0IqH0)
 
     response = requests.get(API_URL, allow_redirects=True)
 
@@ -35,7 +35,7 @@ async def main():
     )
 
     await bot.send_message(
-        chat_id=CHAT_ID,
+        chat_id=,1001234567890
         text=f"📘 Explanation:\n{q['explanation']}"
     )
 
