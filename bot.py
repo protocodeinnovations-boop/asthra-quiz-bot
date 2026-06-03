@@ -20,7 +20,7 @@ async def main():
     response = requests.get(API_URL, allow_redirects=True)
 
     print("STATUS:", response.status_code)
-    print("URL:", response.url)
+    print("FINAL URL:", response.url)
     print("TEXT:", response.text[:1000])
 
     response.raise_for_status()
