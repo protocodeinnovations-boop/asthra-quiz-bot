@@ -8,7 +8,10 @@ CHAT_ID = os.getenv("CHAT_ID")
 
 API_URL = "https://script.google.com/macros/s/AKfycbxBWEHGX_zzsg2oTmImd3z9K7aX9U9KvO72uiAEEgA9bvbk_RP6vdvu80JiREGNMIoD/exec"
 
-async def main():
+QUESTION_DELAY = 30  # seconds between questions
+
+
+async def send_questions():
     if not BOT_TOKEN:
         raise ValueError("BOT_TOKEN not found in Railway Variables")
 
@@ -17,36 +20,49 @@ async def main():
 
     bot = Bot(token=BOT_TOKEN)
 
-    response = requests.get(API_URL, allow_redirects=True)
+    print("Fetching questions from Google Sheets...")
 
-    print("STATUS:", response.status_code)
-    print("FINAL URL:", response.url)
-
+    response = requests.get(API_URL)
     response.raise_for_status()
 
     questions = response.json()
 
     if not questions:
-        print("No questions pending.")
+        print("No questions found.")
         return
 
-    q = questions[0]
+    print(f"Found {len(questions)} questions")
 
-    await bot.send_poll(
-        chat_id=CHAT_ID,
-        question=q["question"],
-        options=[
-            q["a"],
-            q["b"],
-            q["c"],
-            q["d"]
-        ],
-        type="quiz",
-        correct_option_id=["A", "B", "C", "D"].index(q["correct"]),
-        explanation=q["explanation"]
-    )
+    for index, q in enumerate(questions, start=1):
+        try:
+            correct_index = ["A", "B", "C", "D"].index(
+                q["correct"].strip().upper()
+            )
 
-    print("Question sent successfully.")
+            await bot.send_poll(
+                chat_id=CHAT_ID,
+                question=f"Q{index}. {q['question']}",
+                options=[
+                    q["a"],
+                    q["b"],
+                    q["c"],
+                    q["d"]
+                ],
+                type="quiz",
+                correct_option_id=correct_index,
+                explanation=q.get("explanation", "")
+            )
+
+            print(f"✅ Sent Question {index}")
+
+            if index < len(questions):
+                await asyncio.sleep(QUESTION_DELAY)
+
+        except Exception as e:
+            print(f"❌ Error sending Question {index}: {e}")
+
+    print("🎉 Quiz completed!")
+
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(send_questions())
