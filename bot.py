@@ -66,3 +66,11 @@ async def send_questions():
 
 if __name__ == "__main__":
     asyncio.run(send_questions())
+
+# Mark as sent in Google Sheet
+requests.post(
+    API_URL,
+    params={"row": q["row"]}
+)
+
+print(f"✅ Marked row {q['row']} as sent")
