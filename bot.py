@@ -8,15 +8,14 @@ CHAT_ID = os.getenv("CHAT_ID")
 
 API_URL = "https://script.google.com/macros/s/AKfycbxBWEHGX_zzsg2oTmImd3z9K7aX9U9KvO72uiAEEgA9bvbk_RP6vdvu80JiREGNMIoD/exec"
 
-QUESTION_DELAY = 30  # seconds between questions
-
 
 async def send_questions():
+
     if not BOT_TOKEN:
-        raise ValueError("BOT_TOKEN not found in Railway Variables")
+        raise ValueError("BOT_TOKEN not found")
 
     if not CHAT_ID:
-        raise ValueError("CHAT_ID not found in Railway Variables")
+        raise ValueError("CHAT_ID not found")
 
     bot = Bot(token=BOT_TOKEN)
 
@@ -34,43 +33,74 @@ async def send_questions():
     print(f"Found {len(questions)} questions")
 
     for index, q in enumerate(questions, start=1):
+
         try:
+
+            options = [
+                str(q["a"]),
+                str(q["b"]),
+                str(q["c"]),
+                str(q["d"])
+            ]
+
             correct_index = ["A", "B", "C", "D"].index(
-                q["correct"].strip().upper()
+                str(q["correct"]).strip().upper()
             )
+
+            explanation = str(
+                q.get("explanation", "")
+            )[:180]
 
             await bot.send_poll(
                 chat_id=CHAT_ID,
                 question=f"Q{index}. {q['question']}",
-                options=[
-                    q["a"],
-                    q["b"],
-                    q["c"],
-                    q["d"]
-                ],
+                options=options,
                 type="quiz",
                 correct_option_id=correct_index,
-                explanation=q.get("explanation", "")
+                explanation=explanation,
+                is_anonymous=False
             )
 
             print(f"✅ Sent Question {index}")
 
-            if index < len(questions):
-                await asyncio.sleep(QUESTION_DELAY)
+            # Mark as sent
+            try:
+                mark_response = requests.post(
+                    API_URL,
+                    data={
+                        "row": q["row"]
+                    },
+                    timeout=10
+                )
+
+                print(
+                    f"✅ Marked row {q['row']} as sent"
+                )
+
+                print(mark_response.text)
+
+            except Exception as mark_error:
+                print(
+                    f"❌ Mark sent failed: {mark_error}"
+                )
+
+            delay = 10
+
+            try:
+                if "delay" in q:
+                    delay = int(q["delay"])
+            except:
+                delay = 10
+
+            await asyncio.sleep(delay)
 
         except Exception as e:
-            print(f"❌ Error sending Question {index}: {e}")
+            print(
+                f"❌ Error sending Question {index}: {e}"
+            )
 
     print("🎉 Quiz completed!")
 
 
 if __name__ == "__main__":
     asyncio.run(send_questions())
-
-# Mark as sent in Google Sheet
-requests.post(
-    API_URL,
-    params={"row": q["row"]}
-)
-
-print(f"✅ Marked row {q['row']} as sent")
