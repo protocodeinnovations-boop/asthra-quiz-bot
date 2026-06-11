@@ -11,6 +11,8 @@ API_URL = "https://script.google.com/macros/s/AKfycbxBWEHGX_zzsg2oTmImd3z9K7aX9U
 
 async def send_questions():
 
+    print("========== NEW VERSION RUNNING ==========")
+
     if not BOT_TOKEN:
         raise ValueError("BOT_TOKEN not found")
 
@@ -49,11 +51,14 @@ async def send_questions():
 
             explanation = str(
                 q.get("explanation", "")
-            )[:180]
+            )[:90]
+
+            print(f"Sending Question {index}")
+            print(f"Options: {options}")
 
             await bot.send_poll(
                 chat_id=CHAT_ID,
-                question=f"Q{index}. {q['question']}",
+                question=str(q["question"])[:250],
                 options=options,
                 type="quiz",
                 correct_option_id=correct_index,
@@ -63,7 +68,6 @@ async def send_questions():
 
             print(f"✅ Sent Question {index}")
 
-            # Mark as sent
             try:
                 mark_response = requests.post(
                     API_URL,
@@ -73,16 +77,11 @@ async def send_questions():
                     timeout=10
                 )
 
-                print(
-                    f"✅ Marked row {q['row']} as sent"
-                )
-
+                print(f"✅ Marked row {q['row']} as sent")
                 print(mark_response.text)
 
             except Exception as mark_error:
-                print(
-                    f"❌ Mark sent failed: {mark_error}"
-                )
+                print(f"❌ Mark sent failed: {mark_error}")
 
             delay = 10
 
@@ -92,12 +91,11 @@ async def send_questions():
             except:
                 delay = 10
 
+            print(f"Waiting {delay} seconds...")
             await asyncio.sleep(delay)
 
         except Exception as e:
-            print(
-                f"❌ Error sending Question {index}: {e}"
-            )
+            print(f"❌ Error sending Question {index}: {e}")
 
     print("🎉 Quiz completed!")
 
